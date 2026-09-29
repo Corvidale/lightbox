@@ -4,6 +4,9 @@ BNO055_7Semi imu;
 SoftwareSerial mySerial (2,3);
 void setup() {
   Serial.begin(115200);
+  pinMode(2, INPUT);
+  pinMode(3, OUTPUT);
+  
   if (!imu.begin())
     {
         Serial.println("BNO055 not detected!");
@@ -11,10 +14,9 @@ void setup() {
     }
 }
 void loop() {
-  int x, y, z;
-
-  imu.readAccel(x, y, z);
-  int output = abs(x)+abs(y)+abs(z);
-  mySerial.println(output);
+  if (mySerial.available() > 0) {
+    int chowa = mySerial.read();
+    Serial.println(chowa);
+  }
   delay(250);
 }
