@@ -73,7 +73,7 @@ void loop() {
 
 void CheckPlayer1Punch(int data) {
   if (base+1 > pos) {
-    if (data > 3000) {
+    if (data > 2100) {
       int punch = ConvertImpact(data);
       Player1Punch(punch);
     }
@@ -81,7 +81,7 @@ void CheckPlayer1Punch(int data) {
 }
 void CheckPlayer2Punch(int data) {
   if (NUM_LEDS - base < pos) {
-    if (data > 3000) {
+    if (data > 2100) {
       int punch = ConvertImpact(data);
       Player2Punch(punch);
     }
