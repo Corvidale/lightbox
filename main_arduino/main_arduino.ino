@@ -72,7 +72,7 @@ void loop() {
 
 
 void CheckPlayer1Punch(int data) {
-  if (base > pos) {
+  if (base+1 > pos) {
     if (data > 3000) {
       int punch = ConvertImpact(data);
       Player1Punch(punch);
@@ -92,11 +92,11 @@ void CheckPlayer2Punch(int data) {
 
 
 void Player1Punch(int intensity) { //positive
-  speed = 30 - intensity;
+  speed = 50 - intensity;
   reverse = false;
 }
 void Player2Punch(int intensity) { //negative
-  speed = 30 - intensity;
+  speed = 50 - intensity;
   reverse = true;
 }
 
@@ -112,15 +112,18 @@ float ReceiveLocalData() {
   return abs(x) + abs(y) + abs(z);
 }
 float ReceiveSecondaryData() {
-  if (mySerial.available()) {
-    int incomingData = mySerial.parseInt();
-    
-    Serial.print("MAIN received: ");
-    Serial.println(incomingData);
-    return incomingData;
-  } else {
-    return 1000;
+  int latestData = 1000;
+
+  while (mySerial.available() > 0) {
+    // Read up to newline character instantly without timing out
+    String input = mySerial.readStringUntil('\n');
+    int parsed = input.toInt();
+    if (parsed > 0) {
+      latestData = parsed;
+    }
   }
+
+  return latestData;
 }
 
 
@@ -137,9 +140,12 @@ void LightStart() {
 void Color1Light(int position) {
   for (int i = 0; i < NUM_LEDS; i++) {
     if (i == position) {
-      strip.setPixelColor(i, 255,0, 0);
+      int r = map(i, -1, 30, 0, 255);
+      int g = map(i, -1, 30, 180, 0);
+      strip.setPixelColor(i, r,g, 0);
     } else {
-      strip.setPixelColor(i, strip.Color(0, 0, 0));
+      //strip.setPixelColor(i, 0,0,20);
+      strip.setPixelColor(i, 0,0,0);
     }
   }
 }
@@ -162,7 +168,7 @@ void Game() {
   Color1Light(pos);
 
   if (reverse) { //bevæg den vej du bevæger dig :)
-    if (pos < 0) {
+    if (pos < -2) {
       //player 2 won
       state = 3;
     }
@@ -183,6 +189,10 @@ void Game() {
   delay(speed);
 }
 
+
+
+
+
 void GameEnded(int player) {
   switch(player) {
     case 1:
@@ -195,6 +205,8 @@ void GameEnded(int player) {
   strip.show();
   delay(50);
 }
+
+
 void ColorAll(int r, int g, int b) {
   for (int i = 0; i < NUM_LEDS; i++) {
     strip.setPixelColor(i, r,g, b);

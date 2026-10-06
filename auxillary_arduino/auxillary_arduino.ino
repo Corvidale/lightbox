@@ -31,5 +31,5 @@ void loop() {
   Serial.print("SECONDARY sent: ");
   Serial.println(output);
 
-  delay(250);
+  delay(75);
 }
