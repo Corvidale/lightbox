@@ -1,21 +1,28 @@
 #include <7Semi_BNO055.h>
 #include <SoftwareSerial.h>
 #include <Adafruit_NeoPixel.h>
+#include <Wire.h>
+#include "rgb_lcd.h"
 
 BNO055_7Semi imu;
 
 #define LED_PIN A0
 #define NUM_LEDS 30
 
+
+rgb_lcd lcd;
+
+const int colorR = 255;
+const int colorG = 0;
+const int colorB = 0;
+
+
 SoftwareSerial mySerial(2, 3);
 Adafruit_NeoPixel strip(NUM_LEDS, LED_PIN, NEO_GRB + NEO_KHZ800);
-
 
         //CONST DATA
 const int button = 5;
 const int buttonLed = button-1;
-
-
 
         //GLOBAL DATA
 int speed = 100;
@@ -25,10 +32,19 @@ bool reverse = false;
 int max = 11000;
 int frames = 5;
 
-int state = 1; // 1 = spiller, 2 = player 1 vandt, 3 = player 2 vandt
+int p1Score =0;
+int p2Score =0;
 
+int state = 1; // 1 = spiller, 2 = player 1 vandt, 3 = player 2 vandt
+int prevState = 1;
             // start alt det shet
 void setup() {
+
+
+  lcd.begin(16, 2);
+  lcd.display();
+  lcd.setRGB(colorR, colorG, colorB);
+
   Serial.begin(115200);
   mySerial.begin(9600);
   mySerial.setTimeout(10); // stop parseInt() fra at stoppe programmet i 1000ms hver frame
@@ -46,6 +62,8 @@ void setup() {
 
         //loopy lui
 void loop() {
+  
+  
   if (CheckReset()) {
     state = 1;
     speed = 100;
@@ -56,7 +74,7 @@ void loop() {
   } else {
     digitalWrite(buttonLed, LOW);
   }
-
+  
   switch (state) {
     case 1:
       Game();
@@ -68,6 +86,11 @@ void loop() {
       GameEnded(2);
     break;
   }
+  if (prevState != state) {
+    DisplayScore(p1Score,p2Score);
+  }
+  
+  prevState = state;
 }
 
 
@@ -171,6 +194,8 @@ void Game() {
     if (pos < -2) {
       //player 2 won
       state = 3;
+      p1Score++;
+      
     }
     CheckPlayer1Punch(p1Data);
 
@@ -206,7 +231,13 @@ void GameEnded(int player) {
   delay(50);
 }
 
-
+void DisplayScore(int p1, int p2) {
+  lcd.clear();
+  lcd.print(p1);
+  lcd.print(" : ");
+  lcd.print(p2);
+  //display.print(score);
+}
 void ColorAll(int r, int g, int b) {
   for (int i = 0; i < NUM_LEDS; i++) {
     strip.setPixelColor(i, r,g, b);
