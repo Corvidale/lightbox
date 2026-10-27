@@ -40,17 +40,20 @@ int prevState = 1;
             // start alt det shet
 void setup() {
 
-
-  lcd.begin(16, 2);
-  lcd.display();
-  lcd.setRGB(colorR, colorG, colorB);
-
   Serial.begin(115200);
   mySerial.begin(9600);
   mySerial.setTimeout(10); // stop parseInt() fra at stoppe programmet i 1000ms hver frame
   pinMode(button, INPUT);
   pinMode(buttonLed, OUTPUT);
   LightStart();
+
+  lcd.begin(16, 2);
+  lcd.display();
+  lcd.setRGB(colorR, colorG, colorB);
+  lcd.clear();
+  lcd.print(p1Score);
+  lcd.print(" : ");
+  lcd.print(p2Score);
 
   if (!imu.begin()) {
     Serial.println("BNO055 on MAIN not detected!");
@@ -62,7 +65,6 @@ void setup() {
 
         //loopy lui
 void loop() {
-  
   
   if (CheckReset()) {
     state = 1;
@@ -86,11 +88,13 @@ void loop() {
       GameEnded(2);
     break;
   }
+
   if (prevState != state) {
     DisplayScore(p1Score,p2Score);
   }
   
   prevState = state;
+
 }
 
 
@@ -112,8 +116,6 @@ void CheckPlayer2Punch(int data) {
 }
 
 
-
-
 void Player1Punch(int intensity) { //positive
   speed = 50 - intensity;
   reverse = false;
@@ -123,10 +125,12 @@ void Player2Punch(int intensity) { //negative
   reverse = true;
 }
 
+
 float ConvertImpact(int impact) {
   int output = map(impact, 3000, max, 0, 30);
   return constrain(output, 0, 30);
 }
+
 
 float ReceiveLocalData() {
   int x, y, z;
@@ -152,12 +156,11 @@ float ReceiveSecondaryData() {
 
 void LightStart() {
   strip.begin();
-  strip.setBrightness(255);
+  strip.setBrightness(50);
   strip.clear();
   strip.show();
   delay(1000);
 }
-
 
 
 void Color1Light(int position) {
@@ -172,6 +175,8 @@ void Color1Light(int position) {
     }
   }
 }
+
+
 bool CheckReset() {
   if (digitalRead(button) == LOW) {
     return true;
@@ -179,8 +184,6 @@ bool CheckReset() {
     return false;
   }
 }
-
-
 
 
 void Game() {
@@ -204,6 +207,7 @@ void Game() {
     if (pos >= 30) {
       //player 1 won
       state = 2;
+      p2Score++;
     }
     CheckPlayer2Punch(p2Data);
     pos++; // end game if pos hits 29
@@ -213,9 +217,6 @@ void Game() {
   strip.show();
   delay(speed);
 }
-
-
-
 
 
 void GameEnded(int player) {
@@ -231,6 +232,7 @@ void GameEnded(int player) {
   delay(50);
 }
 
+
 void DisplayScore(int p1, int p2) {
   lcd.clear();
   lcd.print(p1);
@@ -238,6 +240,8 @@ void DisplayScore(int p1, int p2) {
   lcd.print(p2);
   //display.print(score);
 }
+
+
 void ColorAll(int r, int g, int b) {
   for (int i = 0; i < NUM_LEDS; i++) {
     strip.setPixelColor(i, r,g, b);
